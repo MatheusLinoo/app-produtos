@@ -5,9 +5,12 @@ import br.com.equipe4.app_produtos.infra.exceptions.EntityNotFoundException;
 import br.com.equipe4.app_produtos.mapper.OrderMapper;
 import br.com.equipe4.app_produtos.model.Order;
 import br.com.equipe4.app_produtos.model.OrderItem;
+import br.com.equipe4.app_produtos.model.TransactionType;
 import br.com.equipe4.app_produtos.repository.OrderRepository;
+import br.com.equipe4.app_produtos.service.dto.StockMovementDTO;
 import br.com.equipe4.app_produtos.service.dto.request.OrderRequestDTO;
 import br.com.equipe4.app_produtos.service.dto.response.OrderResponseDTO;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +22,9 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper mapper;
+    private final InventoryService inventoryService;
 
+    @Transactional
     public OrderResponseDTO create(OrderRequestDTO orderRequestDTO) {
 
         Order order = mapper.toEntity(orderRequestDTO);
@@ -45,9 +50,23 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        for (OrderItem item : savedOrder.getItems()) {
+            StockMovementDTO movement = new StockMovementDTO(
+                TransactionType.EXIT, 
+                item.getQuantity(),
+                "Venda Pedido #" + savedOrder.getId()
+            );
+            
+            inventoryService.processTransaction(
+                item.getProductId(), 
+                movement, 
+                null 
+            );
+        }
 
         return mapper.toDTO(savedOrder);
     }
+
 
 
     public OrderResponseDTO findById(Long id) {

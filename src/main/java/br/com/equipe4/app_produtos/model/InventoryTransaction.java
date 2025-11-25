@@ -38,6 +38,9 @@ public class InventoryTransaction {
     @JoinColumn(name = "user_id")
     private User performedBy; // quem fez a movimentação
 
+    @Column(name = "reference_id")
+    private Long referenceId;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
