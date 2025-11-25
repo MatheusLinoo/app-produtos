@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -20,13 +24,25 @@ public class Products {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "barcode")
-    private String barcode;
-
+    @Column(nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description; 
+
+    @Column(name = "sku", unique = true)
+    private String sku; 
+
+    private String barcode;
+
     @Column(nullable = false)
-    private BigDecimal price;
+    private BigDecimal price; 
+
+    @Column(name = "cost_price")
+    private BigDecimal costPrice;
+
+    @Column(nullable = false)
+    private boolean active = true; 
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -39,4 +55,11 @@ public class Products {
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
     private Inventory inventory;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt; 
+    
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

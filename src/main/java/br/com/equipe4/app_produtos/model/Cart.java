@@ -28,6 +28,9 @@ public class Cart {
 
     @Column(name = "total_amount")
     private BigDecimal totalAmount = BigDecimal.ZERO;
+    
+    @Column(nullable = false)
+    private String status = "OPEN"; 
 
     @UpdateTimestamp
     @Column(name = "updated_at")
@@ -41,5 +44,4 @@ public class Cart {
                 .map(CartItem::getSubTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
 }
