@@ -21,35 +21,26 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    public String generateAccessToken(User user) {
+    public String generateToken(User user) {
         try{
             Algorithm algorithm = Algorithm.HMAC256(secret);
             String token = JWT.create()
-                .withIssuer("AppProdutos")
-                .withSubject(user.getUsername())
-                .withExpiresAt(genAccessTokenExpirationDate())
-                .sign(algorithm);
+                    .withIssuer("AppProdutos")
+                    .withSubject(user.getId().toString())
+                    .withClaim("nome", user.getName())
+                    .withClaim("login", user.getEmail())
+                    .withExpiresAt(genTokenExpirationDate())
+                    .sign(algorithm);
+
             return token;
-        } catch (JWTCreationException exception) {
-            throw new RuntimeException("Error generating token", exception);
+
+        }catch (JWTCreationException e ){
+
+            throw new RuntimeException("Error generating token", e);
         }
     }
 
-    public String generateRefreshToken(User user) {
-        try{
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            String token = JWT.create()
-                .withIssuer("AppProdutos")
-                .withSubject(user.getUsername())
-                .withExpiresAt(genRefreshTokenExpirationDate())
-                .sign(algorithm);
-            return token;
-        } catch (JWTCreationException exception) {
-            throw new RuntimeException("Error generating token", exception);
-        }
-    }
-
-    public String validateAccessToken(String token) {
+    public String validateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
@@ -57,30 +48,13 @@ public class TokenService {
                 .build()
                 .verify(token)
                 .getSubject();
-        } catch (JWTVerificationException exception){
-            return "";
+        } catch (Exception e){
+            return null;
         }
     }
 
-    public String validateRefreshToken(String token) {
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
-                .withIssuer("AppProdutos")
-                .build()
-                .verify(token)
-                .getSubject();
-        } catch (JWTVerificationException exception){
-            return "";
-        }
-    }
-
-    private Instant genAccessTokenExpirationDate() {
+    private Instant genTokenExpirationDate() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
-    }
-
-    private Instant genRefreshTokenExpirationDate() {
-        return LocalDateTime.now().plusHours(7).toInstant(ZoneOffset.of("-03:00"));
     }
 
 }

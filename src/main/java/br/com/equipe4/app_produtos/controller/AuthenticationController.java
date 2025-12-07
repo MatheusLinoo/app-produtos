@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth")
 public class AuthenticationController {
 
     @Autowired
@@ -40,8 +40,8 @@ public class AuthenticationController {
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
         var user = (User) auth.getPrincipal();
-        var accessToken = tokenService.generateAccessToken(user);
-        var refreshToken = tokenService.generateRefreshToken(user);
+        var accessToken = tokenService.generateToken(user);
+        var refreshToken = tokenService.generateToken(user);
 
         return ResponseEntity.ok(new LoginResponseDTO(accessToken, refreshToken));
 
@@ -50,7 +50,7 @@ public class AuthenticationController {
     @PostMapping("/refresh")
     public ResponseEntity refresh(@RequestBody @Valid RefreshTokenDTO data) {
         var refreshToken = data.refreshToken();
-        var login = tokenService.validateRefreshToken(refreshToken);
+        var login = tokenService.validateToken(refreshToken);
         if (login == null) {
             return ResponseEntity.status(401).body("Invalid refresh token");
         }
@@ -60,7 +60,7 @@ public class AuthenticationController {
             return ResponseEntity.status(401).body("User not found");
         }
 
-        var newAccessToken = tokenService.generateAccessToken((User) user);
+        var newAccessToken = tokenService.generateToken((User) user);
 
         return ResponseEntity.ok(new RefreshResponseDTO(newAccessToken));
     }

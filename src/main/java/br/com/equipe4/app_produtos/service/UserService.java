@@ -31,7 +31,9 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.password()));
         
        
-        user.setUsername(dto.email()); 
+        user.setUsername(dto.email());
+
+        user.setRole(br.com.equipe4.app_produtos.model.UserRole.CUSTOMER);
 
         return userMapper.toResponseDto(userRepository.save(user));
     }
